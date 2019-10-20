@@ -1,0 +1,231 @@
+C51 COMPILER V9.56.0.0   MAIN                                                              10/20/2019 17:15:46 PAGE 1   
+
+
+C51 COMPILER V9.56.0.0, COMPILATION OF MODULE MAIN
+OBJECT MODULE PLACED IN main.OBJ
+COMPILER INVOKED BY: D:\Program_Files\Keil956\C51\BIN\C51.EXE main.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND TABS(2)
+
+line level    source
+
+   1          #include "reg51.h" 
+   2          #define uint unsigned int
+   3          #define uchar unsigned char
+   4          void Key_Control(int keyValue);
+   5          void delay_ms(int t);
+   6          int Key_Scan(void) ;
+   7          void display();
+   8          void time_init();
+   9          uint location=0;
+  10          uint  n=0,a,b;
+  11          uchar table[10]={0x3F, 0x06, 0x5B, 0x4F, 0x66, 0x6D, 0x7D, 0x07, 0x7F, 0x6F};
+  12          //uchar DigCode[6]={~0x01,~0x02,~0x04,~0x08,~0x10,~0x20};
+  13          uchar DigCode[6]={~0x20,~0x10,~0x08,~0x04,~0x02,~0x01};
+  14          uint miao=0;    
+  15          uint fen=0;     
+  16          uint shi=0; 
+  17          uint button_flag=0;
+  18          
+  19          unsigned char InterruptCount = 0;
+  20                
+  21          uint date[6]={0,0,0,0,0,0};
+  22          int main()  
+  23          {   
+  24   1        IE = 0x83;
+  25   1        IT0 = 0; 
+  26   1          
+  27   1        
+  28   1          time_init();
+  29   1          while(1)         
+  30   1           {  
+  31   2           
+  32   2           display();
+  33   2           }
+  34   1      }
+  35                
+  36          void display()
+  37          {
+  38   1         
+  39   1      
+  40   1      
+  41   1        for(a = 6; a > 0; a--)  
+  42   1        {   for(b = 0; b <6; b++)  
+  43   2            { P1 = DigCode[b];     
+  44   3            if(b == 2 || b == 4) 
+  45   3              { 
+  46   4              P0 = table[date[b]] | 0x80;    
+  47   4              }   
+  48   3            else   
+  49   3               { P0 = table[date[b]];           
+  50   4               }    
+  51   3           delay_ms(10);  
+  52   3            }
+  53   2        } 
+  54   1        for(a = 6; a > 0; a--)  
+  55   1        {   for(b = 0; b < 6; b++)   
+C51 COMPILER V9.56.0.0   MAIN                                                              10/20/2019 17:15:46 PAGE 2   
+
+  56   2          { 
+  57   3             if(location == b)   
+  58   3               { 
+  59   4               P1 = 0xff;    }    
+  60   3               else    
+  61   3                 { 
+  62   4              P1 = DigCode[b];    
+  63   4                 }     
+  64   3             if(b == 2|| b == 4)    
+  65   3               {     P0 = table[date[b]] | 0x80; 
+  66   4               }    
+  67   3             else   
+  68   3               {     P0 = table[date[b]];    }    
+  69   3            delay_ms(10);   
+  70   3          }  
+  71   2        }  
+  72   1       }
+  73           int Key_Scan(void) 
+  74             { 
+  75   1             int keyValue = 0xff; 
+  76   1       
+  77   1                       int i = 0; 
+  78   1       
+  79   1                       if(P2 != 0xff)    
+  80   1                         {                 delay_ms(1); 
+  81   2       
+  82   2                                      if(P2 != 0xff)                
+  83   2                                        { 
+  84   3                                                       keyValue = P2; 
+  85   3                                               while(P2 != 0xff);
+  86   3       
+  87   3                                                                                                                
+             -  
+  88   3      //                                while((i < 20) && (P2 != 0xff))                         
+  89   3      //                                    {                                
+  90   3      //                                      delay_ms(1);                                
+  91   3      //                                       i++;                         
+  92   3      //                                    }                 
+  93   3                                       } 
+  94   2                          } 
+  95   1       
+  96   1                       return keyValue; 
+  97   1         } 
+  98           void Key_Control(int keyValue) 
+  99             { 
+ 100   1                                  switch(keyValue)         
+ 101   1                                   { 
+ 102   2                                    case(0xfe):  if(location!=0)--location;
+ 103   2                                                  else{location=5;}
+ 104   2                                                  break; 
+ 105   2                                    
+ 106   2                                                                             
+ 107   2                                    case(0xfd):   if(location!=5)++location;
+ 108   2                                                  else{location=0;}
+ 109   2                                                  break;     
+ 110   2                                    case(0xfb): 
+ 111   2                                      if(location==0&&miao<60)miao++;
+ 112   2                                      else if (location==1&&miao<60)miao+=10;
+ 113   2                                      else if (location==2)fen++;
+ 114   2                                      else if (location==3)fen+=10;
+ 115   2                                      else if (location==4)shi++;
+ 116   2                                      else if (location==5)shi+=10;
+C51 COMPILER V9.56.0.0   MAIN                                                              10/20/2019 17:15:46 PAGE 3   
+
+ 117   2                                 
+ 118   2                                     break;
+ 119   2                                                    
+ 120   2                                    case(0xf7): if(location==0&&miao<60)miao--;
+ 121   2                                      else if (location==1&&miao<60)miao-=10;
+ 122   2                                      else if (location==2)fen--;
+ 123   2                                      else if (location==3)fen+=10;
+ 124   2                                      else if (location==4)shi--;
+ 125   2                                      else if (location==5)shi-=10;
+ 126   2                                 
+ 127   2                                     break;
+ 128   2                                   
+ 129   2                                     
+ 130   2                                  }   
+ 131   1         }
+ 132             
+ 133             
+ 134           
+ 135             
+ 136          
+ 137          void time_init()               
+ 138          {
+ 139   1          TMOD = 0x01;          
+ 140   1          TH0 = 0x0b;  
+ 141   1          TL0 = 0xdc;          
+ 142   1          IE = 0x83;          
+ 143   1          TR0 = 1;
+ 144   1      }
+ 145          
+ 146          
+ 147          
+ 148          
+ 149               void timer() interrupt 1         
+ 150          
+ 151             { 
+ 152   1           
+ 153   1              TR0 = 0;          
+ 154   1              
+ 155   1              TH0 = 0x0b;       
+ 156   1              TL0 = 0xdc;              
+ 157   1              TR0 = 1;              
+ 158   1              InterruptCount++;             
+ 159   1               if(InterruptCount >= 16)        
+ 160   1           {                
+ 161   2             InterruptCount = 0;                 
+ 162   2             
+ 163   2              miao++;
+ 164   2                   if(miao>59)
+ 165   2                    {
+ 166   3                       miao=0;
+ 167   3                       fen++;
+ 168   3                     if(fen>59)
+ 169   3                      {
+ 170   4                         fen=0;
+ 171   4                       shi++;
+ 172   4                       if(shi>23)
+ 173   4                       {
+ 174   5                          shi=0;
+ 175   5                       }
+ 176   4                     }
+ 177   3                    }
+ 178   2               date[0]=miao%10;
+C51 COMPILER V9.56.0.0   MAIN                                                              10/20/2019 17:15:46 PAGE 4   
+
+ 179   2               date[1]=miao/10;
+ 180   2               date[2]=fen%10;
+ 181   2               date[3]=fen/10;
+ 182   2               date[4]=shi%10;
+ 183   2               date[5]=shi/10;
+ 184   2                
+ 185   2                  }
+ 186   1             
+ 187   1           }
+ 188                   
+ 189            void INT0_Handler() interrupt 0 
+ 190          {  Key_Control(Key_Scan()); } 
+ 191                 
+ 192           
+ 193                          
+ 194              
+ 195            void delay_ms(int t) 
+ 196            {         
+ 197   1          int i, j;         
+ 198   1          for(i = t; i > 0; i--)                 
+ 199   1          for(j = 100; j > 0; j--); 
+ 200   1        }
+ 201           
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    952    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =     45       4
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)
